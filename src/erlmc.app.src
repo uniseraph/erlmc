@@ -1,0 +1,12 @@
+{application, erlmc,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { erlmc_app, []}},
+  {env, []}
+ ]}.
