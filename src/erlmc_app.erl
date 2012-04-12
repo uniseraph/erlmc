@@ -23,6 +23,7 @@ start(_StartType, _StartArgs) ->
 			{[<<"publish">>,  app , event , body   ], publish_handler, []},
 					
 			{[<<"subscribe_event">>,  app , events  ], subscribe_handler, []},
+			{[<<"subscribe_event">>,  app , events , queue ], subscribe_handler, []},
 			
 			{'_', default_handler, []}
 		]}
