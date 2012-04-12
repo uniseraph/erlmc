@@ -66,7 +66,7 @@ init({_Any, http}, Req=#http_req{socket=Socket}, []) ->
 
 	
        Sub = #'basic.consume'{queue = Q ,no_ack= false},
-       #'basic.consume_ok'{consumer_tag = Ctag} = amqp_channel:subscribe(Channel, Sub, self()),
+       #'basic.consume_ok'{consumer_tag = Ctag} = amqp_channel:subscribe(Channel, Sub,self()),
 	
 	   cowboy_tcp_transport:setopts(Socket, [{active, once}]), 
 	
