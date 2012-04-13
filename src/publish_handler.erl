@@ -12,6 +12,7 @@
 %%
 -export([init/3,  terminate/2]).
 -export([info/3]).
+-export([handle/2]).
 %%
 %% Include files
 %%
@@ -63,19 +64,11 @@ info(Message , Req, State) ->
 
 
 
-    
-
-	
-
-
 terminate(Req=#http_req{resp_state=RespState}, #state{connection=Connection,channel=Channel  , noreply =NoReply }) ->
-
-    
    	error_logger:info_msg("~p Req is ~p ~n",[self(),Req]),
     case   NoReply of 
 		true ->
-	         error_logger:info_msg("~p send to client ~n",[self()]), 	
-	 		 cowboy_http_req:reply(200, [],	<< "publish success.\r\n" >>, Req) ;
+	 		 cowboy_http_req:reply(200, [],	<< "publish success.\r\n" >>, Req#http_req{resp_state=waiting}) ;
 		false ->
 			ok
 	end,
