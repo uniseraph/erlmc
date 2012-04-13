@@ -11,31 +11,29 @@
 %% Exported Functions
 %%
 -export([init/3,  terminate/2]).
--export([handle/2]).
+-export([info/3]).
 %%
 %% Include files
 %%
 -include("amqp_client.hrl").
-
+-include("http.hrl").
+-record(state,{channel,connection,noreply=true}).
 %%
 %% API Functions
 %%
 
 
 init({_Any, http}, Req, []) ->
-   {ok , Req, [] }.
 
-handle(Req,State)->
-	{App   , Req} = cowboy_http_req:binding(app  , Req),
-	{Event , Req} = cowboy_http_req:binding(event, Req),
-	{Body  , Req} = cowboy_http_req:binding(body , Req),
+	{App   , Req1} = cowboy_http_req:binding(app  , Req),
+	{Event , Req2} = cowboy_http_req:binding(event, Req1),
+	{Body  , Req3} = cowboy_http_req:binding(body , Req2),
 	
 	
 
-       	{ok , Connection} = amqp_connection:start(#amqp_params_network{}),
+    {ok , Connection} = amqp_connection:start(#amqp_params_network{}),
 	{ok , Channel }   = amqp_connection:open_channel(Connection),
 
-	 MonitorRef =     erlang:monitor(process,Channel) ,
 
 
 	ok =  amqp_channel:register_return_handler(Channel, self()),
@@ -49,14 +47,17 @@ handle(Req,State)->
 			   payload = Body},
         
 	amqp_channel:cast(Channel,Publish,Msg),
-	{ok,Req2} = cowboy_http_req:reply(200,[] , <<"publish success\r\n">> , Req),
-	{ok , Req2,  {Connection,Channel,MonitorRef} } .
-
+	{ loop , Req3 , #state{connection=Connection,channel=Channel} , 1000 } .
      
 
 
-
-
+info( { #'basic.return'{reply_code=ReplyCode,reply_text=ReplyText} , _ } = Message  ,  Req , State ) ->
+	error_logger:info_msg("~p recving a message ~p~n_", [self(), Message]) ,
+	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error , because of " , ReplyText , "\r\n" ] , Req   ),
+	{ok , Req2 , State#state{noreply=false} };
+info(Message , Req, State) ->
+	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
+	{loop , Req , State} .
 
 	
 
@@ -67,15 +68,45 @@ handle(Req,State)->
 	
 
 
-terminate(_Req, {Connection,Channel,MonitorRef}) ->
-	error_logger:info_msg("~p terminate~n",[self()]),
- 	amqp_channel:close(Channel),
+terminate(Req=#http_req{resp_state=RespState}, #state{connection=Connection,channel=Channel  , noreply =NoReply }) ->
+
+    
+   	error_logger:info_msg("~p Req is ~p ~n",[self(),Req]),
+    case   NoReply of 
+		true ->
+	         error_logger:info_msg("~p send to client ~n",[self()]), 	
+	 		 cowboy_http_req:reply(200, [],	<< "publish success.\r\n" >>, Req) ;
+		false ->
+			ok
+	end,
+	amqp_channel:close(Channel),
 	amqp_connection:close(Connection),
 	ok.
+
 
 
 
 %%
 %% Local Functions
 %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
