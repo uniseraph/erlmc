@@ -12,7 +12,7 @@
 %%
 -export([init/3,  terminate/2]).
 -export([info/3]).
--export([handle/2]).
+%-export([handle/2]).
 %%
 %% Include files
 %%
@@ -38,7 +38,8 @@ init({_Any, http}, Req, []) ->
 
 
 	ok =  amqp_channel:register_return_handler(Channel, self()),
-
+	ok =  amqp_channel:register_confirm_handler(Channel, self()),
+	
 	Publish = #'basic.publish'{
 			exchange =  erlmc_util:build_exchange_name(App) ,
 			mandatory = true,		
@@ -48,13 +49,13 @@ init({_Any, http}, Req, []) ->
 			   payload = Body},
         
 	amqp_channel:cast(Channel,Publish,Msg),
-	{ loop , Req3 , #state{connection=Connection,channel=Channel} , 1000 } .
+	{ loop , Req3 , #state{connection=Connection,channel=Channel} , 100 } .
      
 
 
 info( { #'basic.return'{reply_code=ReplyCode,reply_text=ReplyText} , _ } = Message  ,  Req , State ) ->
-	error_logger:info_msg("~p recving a message ~p~n_", [self(), Message]) ,
-	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error , because of " , ReplyText , "\r\n" ] , Req   ),
+	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
+	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error ," , ReplyText , "\r\n" ] , Req   ),
 	{ok , Req2 , State#state{noreply=false} };
 info(Message , Req, State) ->
 	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
@@ -65,10 +66,10 @@ info(Message , Req, State) ->
 
 
 terminate(Req=#http_req{resp_state=RespState}, #state{connection=Connection,channel=Channel  , noreply =NoReply }) ->
-   	error_logger:info_msg("~p Req is ~p ~n",[self(),Req]),
     case   NoReply of 
 		true ->
-	 		 cowboy_http_req:reply(200, [],	<< "publish success.\r\n" >>, Req#http_req{resp_state=waiting}) ;
+			 %greate hack
+	 		 cowboy_http_req:reply(200, [],	<< "publish success\r\n" >>, Req#http_req{resp_state=waiting}) ;
 		false ->
 			ok
 	end,
