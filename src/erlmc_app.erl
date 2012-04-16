@@ -25,6 +25,9 @@ start(_StartType, _StartArgs) ->
 			{[<<"subscribe_event">>,  app , events  ], subscribe_handler, []},
 			{[<<"subscribe_event">>,  app , events , queue ], subscribe_handler, []},
 			
+			{[<<"subscribe_app">>,  app , key  ], subscribe_app_handler, []},
+			{[<<"subscribe_app">>,  app , key , queue ], subscribe_app_handler, []},
+			
 			{'_', default_handler, []}
 		]}
 	],

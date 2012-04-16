@@ -65,11 +65,12 @@ info(Message , Req, State) ->
 
 
 
-terminate(Req=#http_req{resp_state=RespState}, #state{connection=Connection,channel=Channel  , noreply =NoReply }) ->
+terminate(Req=#http_req{resp_state=RespState}, 
+		#state{connection=Connection,channel=Channel  , noreply =NoReply }) ->
     case   NoReply of 
 		true ->
 			 %greate hack
-	 		 cowboy_http_req:reply(200, [],	<< "publish success\r\n" >>, Req#http_req{resp_state=waiting}) ;
+	 	 cowboy_http_req:reply(200, [],	<< "publish success\r\n" >>, Req#http_req{resp_state=waiting}) ;
 		false ->
 			ok
 	end,
