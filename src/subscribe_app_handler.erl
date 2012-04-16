@@ -71,7 +71,8 @@ init({_Any, http}, Req=#http_req{socket=Socket}, []) ->
 		
 	        cowboy_http_req:reply(200, [],  [ Reason, "\r\n" ]  , Req ),
 		{ok , NewChannel }   = amqp_connection:open_channel(Connection),
-		amqp_channel:call(NewChannel, #'queue.delete'{queue=Q}),
+	        #'queue.delete_ok'{} =	amqp_channel:call(NewChannel, #'queue.delete'{queue=Q}),
+		amqp_channel:close(NewChannel),
 		amqp_connection:close(Connection),
 		
 		{ shutdown , Req , #state{connection=Connection }} 
