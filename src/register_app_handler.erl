@@ -39,7 +39,7 @@ handle(Req, State) ->
 	Declare = #'exchange.declare'{
 		exchange=  erlmc_util:build_exchange_name(App) ,
 		durable = case Persistent of  <<"true">> ->   true ;  _ -> false   end
-        ,type= <<  "direct"  >>				
+        ,type= <<"topic">>				
 	},
 	
 
