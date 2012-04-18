@@ -39,7 +39,7 @@ init({_Any, http}, Req, []) ->
 
 	ok =  amqp_channel:register_return_handler(Channel, self()),
 	ok =  amqp_channel:register_confirm_handler(Channel, self()),
-	
+        #'confirm.select_ok'{}=amqp_channel:call(Channel,#'confirm.select'{}),	
 	Publish = #'basic.publish'{
 			exchange =  erlmc_util:build_exchange_name(App) ,
 			mandatory = true,		
@@ -48,8 +48,11 @@ init({_Any, http}, Req, []) ->
      	Msg = #amqp_msg{  props =  #'P_basic'{delivery_mode = 2}  ,  
 			   payload = Body},
         
+	error_logger:info_msg("~p publish .....~n", [self()]) ,
 	amqp_channel:cast(Channel,Publish,Msg),
-	{ loop , Req3 , #state{connection=Connection,channel=Channel} , 100 } .
+
+     %   amqp_channel:wait_for_confirms_or_die(Channel,1000),
+	{ loop , Req3 , #state{connection=Connection,channel=Channel} ,500 } .
      
 
 
@@ -57,6 +60,14 @@ info( { #'basic.return'{reply_code=ReplyCode,reply_text=ReplyText} , _ } = Messa
 	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
 	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error ," , ReplyText , "\r\n" ] , Req   ),
 	{ok , Req2 , State#state{noreply=false} };
+info( #'basic.ack'{delivery_tag=1,multiple=false}=Message, Req,State)->
+	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
+	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish success \r\n" ] , Req   ),
+	{ok , Req2 , State#state{noreply=true} };
+info( #'basic.nack'{}=Message, Req,State)->
+	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
+	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error, no confirm \r\n" ] , Req   ),
+	{ok , Req2 , State#state{noreply=true} };
 info(Message , Req, State) ->
 	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
 	{loop , Req , State} .
