@@ -17,16 +17,16 @@ start(_StartType, _StartArgs) ->
 			{[<<"register_app">>,  app   ], register_app_handler, []},
 			{[<<"register_app">>,  app , persistent  ], register_app_handler, []},
 			
-			{[<<"register_event">>,  app , event   ], register_event_handler, []},
-			{[<<"register_event">>,  app , event, persistent  ], register_event_handler, []},
-			
-			{[<<"publish">>,  app , event , body   ], publish_handler, []},
-					
-			{[<<"subscribe_event">>,  app , events  ], subscribe_handler, []},
-			{[<<"subscribe_event">>,  app , events , queue ], subscribe_handler, []},
-			
 			{[<<"subscribe_app">>,  app , key  ], subscribe_app_handler, []},
 			{[<<"subscribe_app">>,  app , key , queue ], subscribe_app_handler, []},
+			
+			{[<<"publish">>,  app , event , body   ], publish_handler, []},
+ 			
+%			{[<<"register_event">>,  app , event   ], register_event_handler, []},
+%			{[<<"register_event">>,  app , event, persistent  ], register_event_handler, []},
+%			{[<<"subscribe_event">>,  app , events  ], subscribe_handler, []},
+%			{[<<"subscribe_event">>,  app , events , queue ], subscribe_handler, []},
+			
 			
 			{'_', default_handler, []}
 		]}

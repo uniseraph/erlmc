@@ -43,7 +43,7 @@ handle(Req, State) ->
 	},
 	
 
-    try
+        try
 		  case  amqp_channel:call(Channel,Declare) of
 				#'exchange.declare_ok'{} -> 
 		  				{ok ,Req2} = cowboy_http_req:reply(200, [], 
@@ -51,7 +51,7 @@ handle(Req, State) ->
 		  				{ok, Req2, State} 
 		  end
 	catch
-		   exit:Why ->
+		   exit:{Why,_} ->
 		 	  {ok , Req3} = cowboy_http_req:reply(200,[], 
 								list_to_binary(io_lib:format("~p~n",[Why]))   ,
 								Req ),
