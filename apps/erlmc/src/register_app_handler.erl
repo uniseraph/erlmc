@@ -15,7 +15,7 @@
 %%
 %% Include files
 %%
--include("amqp_client.hrl").
+-include("../../deps/amqp_client/include/amqp_client.hrl").
 
 %%
 %% API Functions

@@ -16,8 +16,10 @@
 %%
 %% Include files
 %%
--include("amqp_client.hrl").
--include("http.hrl").
+-include_lib("../../deps/amqp_client/include/amqp_client.hrl").
+-include_lib("../../deps/cowboy/include/http.hrl").
+%-include_lib("amqp_client.hrl").
+%-include_lib("http.hrl").
 -record(state,{channel,connection,noreply=true}).
 %%
 %% API Functions
@@ -48,7 +50,7 @@ init({_Any, http}, Req, []) ->
      	Msg = #amqp_msg{  props =  #'P_basic'{delivery_mode = 2}  ,  
 			   payload = Body},
         
-	error_logger:info_msg("~p publish .....~n", [self()]) ,
+%	error_logger:info_msg("~p publish .....~n", [self()]) ,
 	amqp_channel:cast(Channel,Publish,Msg),
 
      %   amqp_channel:wait_for_confirms_or_die(Channel,1000),
