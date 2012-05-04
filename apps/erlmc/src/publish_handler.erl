@@ -34,9 +34,10 @@ init({_Any, http}, Req, []) ->
 	
 	
 
-    {ok , Connection} = amqp_connection:start(#amqp_params_network{}),
-	{ok , Channel }   = amqp_connection:open_channel(Connection),
+   % {ok , Connection} = amqp_connection:start(#amqp_params_network{}),
+%	{ok , Channel }   = amqp_connection:open_channel(Connection),
 
+	{Connection,Channel}=amqp_pool:lease(),
 
 
 	ok =  amqp_channel:register_return_handler(Channel, self()),
@@ -87,8 +88,9 @@ terminate(Req=#http_req{resp_state=RespState},
 		false ->
 			ok
 	end,
-	amqp_channel:close(Channel),
-	amqp_connection:close(Connection),
+%	amqp_channel:close(Channel),
+%	amqp_connection:close(Connection),
+	amqp_pool:return({Connection,Channel}),
 	ok.
 
 
