@@ -16,8 +16,8 @@
 %%
 %% Include files
 %%
--include_lib("../../deps/amqp_client/include/amqp_client.hrl").
--include_lib("../../deps/cowboy/include/http.hrl").
+-include_lib("amqp_client/include/amqp_client.hrl").
+-include_lib("cowboy/include/http.hrl").
 %-include_lib("amqp_client.hrl").
 %-include_lib("http.hrl").
 -record(state,{channel,connection,noreply=true}).
@@ -42,7 +42,8 @@ init({_Any, http}, Req, []) ->
 
 	ok =  amqp_channel:register_return_handler(Channel, self()),
 	ok =  amqp_channel:register_confirm_handler(Channel, self()),
-        #'confirm.select_ok'{}=amqp_channel:call(Channel,#'confirm.select'{}),	
+	
+    #'confirm.select_ok'{}=amqp_channel:call(Channel,#'confirm.select'{}),	
 	Publish = #'basic.publish'{
 			exchange =  erlmc_util:build_exchange_name(App) ,
 			mandatory = true,		
@@ -57,8 +58,13 @@ init({_Any, http}, Req, []) ->
      %   amqp_channel:wait_for_confirms_or_die(Channel,1000),
 	{ loop , Req3 , #state{connection=Connection,channel=Channel} ,500 } .
      
+info( #'channel.flow'{active = false} = Message , Req , State )->
+	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
 
+	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["active=false error", "\r\n" ] , Req   ),
+        {ok , Req2 , State};
 
+ 
 info( { #'basic.return'{reply_code=ReplyCode,reply_text=ReplyText} , _ } = Message  ,  Req , State ) ->
 	error_logger:info_msg("~p recving a message ~p~n", [self(), Message]) ,
 	{ok,Req2} =cowboy_http_req:reply(200, [] ,  ["publish error ," , ReplyText , "\r\n" ] , Req   ),

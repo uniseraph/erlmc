@@ -15,8 +15,8 @@
 %%
 %% Include files
 %%
--include_lib("../../deps/amqp_client/include/amqp_client.hrl").
--include_lib("../../deps/cowboy/include/http.hrl").
+-include_lib("amqp_client/include/amqp_client.hrl").
+-include_lib("cowboy/include/http.hrl").
 
 %%
 %% API Functions

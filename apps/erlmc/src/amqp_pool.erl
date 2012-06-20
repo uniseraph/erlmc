@@ -3,7 +3,7 @@
 
 -export([lease/0,return/1]).
 
--include("../../deps/amqp_client/include/amqp_client.hrl").
+-include_lib("amqp_client/include/amqp_client.hrl").
 
 
 lease()->
